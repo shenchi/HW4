@@ -71,22 +71,22 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)..\3rd_party\glm;$(SolutionDir)..\3rd_party\glfw\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)..\3rd_party\glm;$(SolutionDir)..\3rd_party\glad\include;$(SolutionDir)..\3rd_party\glfw\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)..\3rd_party\glfw\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)..\3rd_party\glm;$(SolutionDir)..\3rd_party\glfw\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)..\3rd_party\glm;$(SolutionDir)..\3rd_party\glad\include;$(SolutionDir)..\3rd_party\glfw\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)..\3rd_party\glfw\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)..\3rd_party\glm;$(SolutionDir)..\3rd_party\glfw\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)..\3rd_party\glm;$(SolutionDir)..\3rd_party\glad\include;$(SolutionDir)..\3rd_party\glfw\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)..\3rd_party\glfw\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)..\3rd_party\glm;$(SolutionDir)..\3rd_party\glfw\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)..\3rd_party\glm;$(SolutionDir)..\3rd_party\glad\include;$(SolutionDir)..\3rd_party\glfw\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)..\3rd_party\glfw\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -154,7 +154,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\3rd_party\glad\src\glad.c" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="ModuleFactoryGL.cpp" />
+    <ClCompile Include="NativeWindowGL.cpp" />
+    <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="RendererGL.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CommonTypes.h" />
+    <ClInclude Include="ModuleFactory.h" />
+    <ClInclude Include="ModuleFactoryGL.h" />
+    <ClInclude Include="NativeWindow.h" />
+    <ClInclude Include="NativeWindowGL.h" />
+    <ClInclude Include="Renderer.h" />
+    <ClInclude Include="RendererGL.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
