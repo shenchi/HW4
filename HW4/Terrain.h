@@ -2,12 +2,8 @@
 
 #include "CommonTypes.h"
 
-#include <queue>
 #include <functional>
-#include <thread>
-#include <mutex>
-#include <atomic>
-#include <array>
+#include <cmath>
 
 namespace hw4
 {
@@ -30,12 +26,14 @@ namespace hw4
 		inline const float* VertexBuffer(int idx) const { return data[idx]; }
 		inline size_t VertexBufferSize() const { return block_data_size * sizeof(float); }
 
-		inline bool IsUpdateFlagSet(int idx) const { return update_flags[idx]; }
-		inline void ClearUpdateFlag(int idx) { update_flags[idx] = false; }
+		bool IsUpdateFlagSet(int idx) const;
+		void ClearUpdateFlag(int idx);
 
 	private:
 
-		inline int to_block_coord(float x) const { return static_cast<int>(x / block_width + 0.5f); }
+		inline int to_block_coord(float x) const { 
+			return static_cast<int>(floor(x / block_width + 0.5f)); 
+		}
 
 		inline int block_coord_to_index(int x, int y) const { return (y + 1) * 3 + x + 1; }
 
@@ -63,19 +61,7 @@ namespace hw4
 
 		std::function<float(float, float)> sampler;
 
-		struct Task
-		{
-			int x;
-			int y;
-			int bufferId;
-		};
-
-		std::queue<Task> task_queue;
-		std::mutex task_queue_mutex;
-
-		std::atomic_bool work_thread_running;
-		std::thread work_thread;
-
-		std::array<std::atomic_bool, 9> update_flags;
+		struct ThreadData;
+		ThreadData*	thread_data;
 	};
 }

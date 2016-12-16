@@ -11,6 +11,8 @@ namespace hw4
 		NativeWindowGLFW(int width, int height, const char* title, bool fullscreen = false);
 		~NativeWindowGLFW();
 
+		virtual void SetTitle(const char* title);
+
 		virtual bool UpdateEvent();
 
 		virtual void Present();

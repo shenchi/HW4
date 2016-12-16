@@ -1,5 +1,8 @@
 #include <Windows.h>
+
 #include <memory>
+
+#include <cstdio>
 #include <cassert>
 
 #include <chrono>
@@ -186,6 +189,13 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 			break;
 
 		Update(deltaTime);
+
+		{
+			char buf[64];
+			auto pos = camera.GetPosition();
+			sprintf(buf, "HW4 (%.6f, %.6f, %.6f)", pos.x, pos.y, pos.z);
+			win->SetTitle(buf);
+		}
 
 		renderer->ClearRenderTarget(1.0f, 1.0f, 1.0f, 1.0f);
 		renderer->ClearDepthStencil(1.0f, 0);

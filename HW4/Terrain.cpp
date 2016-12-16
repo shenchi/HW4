@@ -1,8 +1,15 @@
+#pragma warning(disable: 4996)
 #include "Terrain.h"
 
 #include <Windows.h>
 #include <string>
 #include <cstdlib>
+
+#include <queue>
+#include <thread>
+#include <mutex>
+#include <atomic>
+#include <array>
 
 #include <unordered_set>
 #include <cassert>
@@ -10,6 +17,23 @@
 
 namespace hw4
 {
+	struct Task
+	{
+		int x;
+		int y;
+		int bufferId;
+	};
+
+	struct Terrain::ThreadData 
+	{
+		std::queue<Task> task_queue;
+		std::mutex task_queue_mutex;
+
+		std::atomic_bool work_thread_running;
+		std::thread work_thread;
+
+		std::array<std::atomic_bool, 9> update_flags;
+	};
 
 	hw4::Terrain::Terrain(float gridSize, int blockSize)
 		:
@@ -17,7 +41,8 @@ namespace hw4
 		block_size(blockSize),
 		block_width(gridSize * blockSize),
 		data{ nullptr },
-		initialized(false)
+		initialized(false),
+		thread_data(new ThreadData())
 	{
 		sampler = [](float x, float y) { return 0.0f; };
 
@@ -44,20 +69,20 @@ namespace hw4
 			}
 		}
 
-		work_thread_running = true;
-		work_thread = std::thread(&Terrain::WorkingThread, this);
+		thread_data->work_thread_running = true;
+		thread_data->work_thread = std::thread(&Terrain::WorkingThread, this);
 
 		for (int i = 0; i < 9; i++)
 		{
 			buffer_id[i] = -1;
-			update_flags[i] = false;
+			thread_data->update_flags[i] = false;
 		}
 	}
 
 	Terrain::~Terrain()
 	{
-		work_thread_running = false;
-		work_thread.join();
+		thread_data->work_thread_running = false;
+		thread_data->work_thread.join();
 
 		for (int i = 0; i < 9; ++i)
 		{
@@ -67,6 +92,8 @@ namespace hw4
 				data[i] = nullptr;
 			}
 		}
+
+		delete thread_data;
 	}
 
 	void Terrain::SetPlayerPosition(float x, float y, float z)
@@ -141,8 +168,8 @@ namespace hw4
 				assert(new_buffer_id[new_idx] != -1);
 
 				{
-					std::lock_guard<std::mutex> guard(task_queue_mutex);
-					task_queue.push(Task{ blockX + dx, blockY + dy, new_buffer_id[new_idx] });
+					std::lock_guard<std::mutex> guard(thread_data->task_queue_mutex);
+					thread_data->task_queue.push(Task{ blockX + dx, blockY + dy, new_buffer_id[new_idx] });
 					std::string str = "new: ";
 					char buf[20]; 
 					itoa(blockX + dx, buf, 10);
@@ -162,21 +189,31 @@ namespace hw4
 		current_block_y = blockY;
 	}
 
+	bool Terrain::IsUpdateFlagSet(int idx) const
+	{
+		return thread_data->update_flags[idx];
+	}
+
+	void Terrain::ClearUpdateFlag(int idx)
+	{
+		thread_data->update_flags[idx] = false;
+	}
+
 	void Terrain::WorkingThread()
 	{
 		bool empty = false;
 		Task task;
 
-		while (work_thread_running)
+		while (thread_data->work_thread_running)
 		{
 			empty = false;
 			{
-				std::lock_guard<std::mutex> guard(task_queue_mutex);
-				empty = task_queue.empty();
+				std::lock_guard<std::mutex> guard(thread_data->task_queue_mutex);
+				empty = thread_data->task_queue.empty();
 				if (!empty)
 				{
-					task = task_queue.front();
-					task_queue.pop();
+					task = thread_data->task_queue.front();
+					thread_data->task_queue.pop();
 				}
 			}
 
@@ -185,7 +222,7 @@ namespace hw4
 			if (!empty)
 			{
 				GenerateBlock(data[task.bufferId], task.x, task.y);
-				update_flags[task.bufferId] = true;
+				thread_data->update_flags[task.bufferId] = true;
 			}
 		}
 	}

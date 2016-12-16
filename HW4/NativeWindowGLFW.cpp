@@ -36,6 +36,11 @@ namespace hw4
 		glfwDestroyWindow(window);
 	}
 
+	void NativeWindowGLFW::SetTitle(const char * title)
+	{
+		glfwSetWindowTitle(window, title);
+	}
+
 	bool NativeWindowGLFW::UpdateEvent()
 	{
 		glfwPollEvents();

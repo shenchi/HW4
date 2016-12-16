@@ -9,6 +9,8 @@ namespace hw4
 	public:
 		virtual ~NativeWindow() {}
 
+		virtual void SetTitle(const char* title) = 0;
+
 		virtual bool UpdateEvent() = 0;
 
 		virtual void Present() = 0;
