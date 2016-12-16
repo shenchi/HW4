@@ -6,56 +6,37 @@
 
 #include <glm\glm.hpp>
 #include <glm\gtc\matrix_transform.hpp>
+#include <glm\gtc\noise.hpp>
 
 #include "ModuleFactoryGL.h"
 #include "NativeWindow.h"
 #include "Renderer.h"
 #include "Input.h"
 #include "Camera.h"
+#include "Terrain.h"
 
 namespace
 {
 	typedef std::chrono::high_resolution_clock timer;
 
-	/*const float vertices[] = {
-		0.0f, 0.5f, 0.0f,
-		0.5f, -0.5f, 0.0f,
-		-0.5f, -0.5f, 0.0f,
-	};*/
-
-	const float vertices[] = 
-	{
-		-0.5f, 0.0f, 0.5f,
-		-0.5f, 0.0f, -0.5f,
-		0.5f, 0.0f, 0.5f,
-		0.5f, 0.0f, -0.5f,
-	};
-
-	const unsigned int indices[] =
-	{
-		0, 1, 2, 2, 1, 3
-	};
-
-	float *dynamic_vertices = nullptr;
-
-	hw4::VertexBufferHandle vertex_buffer;
+	hw4::VertexBufferHandle vertex_buffer[9];
 	hw4::IndexBufferHandle index_buffer;
 	hw4::Camera camera;
+
+	hw4::Terrain* pTerrain;
 }
 
 
 void Init()
 {
-	int float_count = sizeof(vertices) / sizeof(float);
-	dynamic_vertices = new float[float_count];
-	for (int i = 0; i < float_count; i++)
-		dynamic_vertices[i] = vertices[i];
+	for (int i = 0; i < 9; i++)
+	{
+		vertex_buffer[i] = hw4::Renderer::instance()->CreateVertexBuffer(pTerrain->VertexBufferSize(), 0);
+	}
 
-	vertex_buffer = hw4::Renderer::instance()->CreateVertexBuffer(sizeof(vertices), reinterpret_cast<const void*>(dynamic_vertices));
+	index_buffer = hw4::Renderer::instance()->CreateIndexBuffer(pTerrain->IndexBufferSize(), pTerrain->IndexBuffer());
 
-	index_buffer = hw4::Renderer::instance()->CreateIndexBuffer(sizeof(indices), indices);
-
-	camera.SetPosition(glm::vec3(0.0f, 1.0f, 1.0f));
+	camera.SetPosition(glm::vec3(0.0f, 1.0f, 0.0f));
 
 }
 
@@ -71,8 +52,18 @@ void Update(float delta_time)
 	static float t = 0.0f;
 	t += delta_time;
 
-	//dynamic_vertices[0] = sin(t) * 0.5f;
-	//hw4::Renderer::instance()->UpdateVertexBuffer(buffer, sizeof(vertices), reinterpret_cast<const void*>(dynamic_vertices));
+	for (int i = 0; i < 9; i++)
+	{
+		if (pTerrain->IsUpdateFlagSet(i))
+		{
+			const float* vertices = pTerrain->VertexBuffer(i);
+			hw4::Renderer::instance()->UpdateVertexBuffer(vertex_buffer[i], 
+				pTerrain->VertexBufferSize(), 
+				reinterpret_cast<const void*>(vertices));
+			pTerrain->ClearUpdateFlag(i);
+			break;
+		}
+	}
 
 	{
 		hw4::Input* input = hw4::Input::instance();
@@ -130,6 +121,7 @@ void Update(float delta_time)
 		}
 
 		camera.SetPosition(camera_pos);
+		pTerrain->SetPlayerPosition(camera_pos.x, camera_pos.y, camera_pos.z);
 	}
 
 
@@ -139,15 +131,17 @@ void Update(float delta_time)
 
 void Render()
 {
-	hw4::Renderer::instance()->SetVertexBuffer(vertex_buffer);
 	hw4::Renderer::instance()->SetIndexBuffer(index_buffer);
-	//hw4::Renderer::instance()->Draw(0, 6);
-	hw4::Renderer::instance()->DrawIndexed(0, 6);
+
+	for (int i = 0; i < 9; i++)
+	{
+		hw4::Renderer::instance()->SetVertexBuffer(vertex_buffer[i]);
+		hw4::Renderer::instance()->DrawIndexed(0, pTerrain->IndicesCount());
+	}
 }
 
 void Release()
 {
-	delete[] dynamic_vertices;
 }
 
 int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
@@ -158,6 +152,12 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	//auto win = factory->CreateNativeWindow(1920, 1080, "HW4", true);
 	auto renderer = factory->CreateRenderer(win);
 	auto input = factory->CreateInput(win);
+
+	//auto terrain = std::make_shared<hw4::Terrain>(0.1f, 100);
+	auto terrain = std::make_shared<hw4::Terrain>(0.1f, 100);
+	pTerrain = terrain.get();
+	pTerrain->SetSamplingFunction([](float x, float y) { return glm::perlin(glm::vec2(x, y)) * 0.7f; });
+	pTerrain->SetPlayerPosition(0.0f, 1.0f, 0.0f);
 
 	ResetProjection(win->Width(), win->Height());
 	win->SetResizeCallback(ResetProjection);
@@ -187,8 +187,8 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 		Update(deltaTime);
 
-		renderer->ClearRenderTarget(0.0f, 0.0f, 0.0f, 1.0f);
-		renderer->ClearDepthStencil(0.0f, 0);
+		renderer->ClearRenderTarget(1.0f, 1.0f, 1.0f, 1.0f);
+		renderer->ClearDepthStencil(1.0f, 0);
 
 		Render();
 

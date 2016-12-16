@@ -31,8 +31,8 @@ namespace hw4
 		{
 			glm::mat3 rot = glm::eulerAngleYXZ(rotation.y, rotation.x, rotation.z);
 			glm::vec3 target = position + rot * glm::vec3(0.0f, 0.0f, -1.0f);
-			//glm::vec3 up = rot * glm::vec3(0.0f, 1.0f, 0.0f);
-			return glm::lookAt(position, target, glm::vec3(0.0f, 1.0f, 0.0f));
+			glm::vec3 up = rot * glm::vec3(0.0f, 1.0f, 0.0f);
+			return glm::lookAt(position, target, up);
 		}
 
 		inline const glm::mat4& GetProjectionMatrix() const { return mat_proj; }

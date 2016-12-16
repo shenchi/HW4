@@ -49,16 +49,15 @@ namespace hw4
 
 		uint32 vertex_shader, fragment_shader, program;
 		uint32 position_location;
+		uint32 normal_location;
 		uint32 mat_model_location;
 		uint32 mat_view_location;
 		uint32 mat_proj_location;
-
-		uint32 vao;
-
+		
 		struct VertexBuffer
 		{
 			bool	in_use;
-			uint32	vbo;
+			uint32	vao, vbo;
 		};
 
 		std::vector<VertexBuffer> vertex_buffers;

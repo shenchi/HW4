@@ -162,6 +162,7 @@
     <ClCompile Include="NativeWindowGLFW.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="RendererGL.cpp" />
+    <ClCompile Include="Terrain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
@@ -175,6 +176,7 @@
     <ClInclude Include="NativeWindowGLFW.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="RendererGL.h" />
+    <ClInclude Include="Terrain.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

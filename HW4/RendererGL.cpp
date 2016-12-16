@@ -7,11 +7,15 @@
 
 namespace
 {
-#define STRINGIFY(x) #x
 
-	const char* vert_shader_source = STRINGIFY(
+	const char* vert_shader_source = R"(
+	#version 150 core
+
 	in vec3 position;
+	in vec3 normal;
 	
+	out vec3 worldNormal;
+
 	uniform mat4 matModel;
 	uniform mat4 matView;
 	uniform mat4 matProj;
@@ -19,18 +23,32 @@ namespace
 	void main()
 	{
 		gl_Position = matProj * matView * matModel * vec4(position, 1.0);
+		worldNormal = normalize((matModel * vec4(normal, 0.0)).xyz);
 	}
 
-	);
+	)";
 
-	const char* pixel_shader_source = STRINGIFY(
+	const char* pixel_shader_source = R"(
+	#version 150 core
+
+	in vec3 worldNormal;
 
 	void main()
 	{
-		gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+		//const vec3 light_dir = normalize(vec3(1.0, 1.0, 1.0));
+		//float NdotL = clamp(dot(worldNormal, light_dir), 0, 1);
+		
+		//gl_FragColor = vec4(worldNormal, 1.0);
+		//gl_FragColor = vec4(NdotL, NdotL, NdotL, 1.0);
+		//gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+
+		float zNear = 0.01;
+		float zFar = 100.0;
+		float gray = (2.0 * zNear) / (zFar + zNear - gl_FragCoord.z * (zFar - zNear)) * 2.0;
+		gl_FragColor = vec4(gray, gray, gray, 1.0);
 	}
 
-	);
+	)";
 
 
 	void ShowShaderLog(GLuint shader)
@@ -76,6 +94,7 @@ namespace hw4
 		assert(status == GL_TRUE);
 
 		position_location = glGetAttribLocation(program, "position");
+		normal_location = glGetAttribLocation(program, "normal");
 
 		mat_model_location = glGetUniformLocation(program, "matModel");
 		mat_view_location = glGetUniformLocation(program, "matView");
@@ -88,8 +107,8 @@ namespace hw4
 		glUniformMatrix4fv(mat_view_location, 1, GL_FALSE, reinterpret_cast<GLfloat*>(&identity));
 		glUniformMatrix4fv(mat_proj_location, 1, GL_FALSE, reinterpret_cast<GLfloat*>(&identity));
 
-		glGenVertexArrays(1, &vao);
-		glBindVertexArray(vao);
+		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_CULL_FACE);
 	}
 
 	RendererGL::~RendererGL()
@@ -98,16 +117,22 @@ namespace hw4
 
 	VertexBufferHandle RendererGL::CreateVertexBuffer(size_t size, const void* data)
 	{
-		GLuint vbo;
+		GLuint vao, vbo;
+
+		glGenVertexArrays(1, &vao);
+		glBindVertexArray(vao);
 
 		glGenBuffers(1, &vbo);
 		glBindBuffer(GL_ARRAY_BUFFER, vbo);
 		glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
 
 		glEnableVertexAttribArray(position_location);
-		glVertexAttribPointer(position_location, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
+		glVertexAttribPointer(position_location, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, reinterpret_cast<void*>(0));
 
-		vertex_buffers.push_back(VertexBuffer{ true, vbo });
+		glEnableVertexAttribArray(normal_location);
+		glVertexAttribPointer(normal_location, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, reinterpret_cast<void*>(3));
+
+		vertex_buffers.push_back(VertexBuffer{ true, vao, vbo });
 
 		return VertexBufferHandle{ static_cast<uint32>(vertex_buffers.size() - 1) };
 	}
@@ -117,6 +142,7 @@ namespace hw4
 		if (!IsValid(vertex_buffer))
 			return;
 
+		glBindVertexArray(vertex_buffers[vertex_buffer].vao);
 		glBindBuffer(GL_ARRAY_BUFFER, vertex_buffers[vertex_buffer].vbo);
 		glBufferData(GL_ARRAY_BUFFER, size, 0, GL_DYNAMIC_DRAW); // orphaning the buffer
 		glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
@@ -181,6 +207,7 @@ namespace hw4
 		if (!IsValid(current_vertex_buffer))
 			return;
 
+		glBindVertexArray(vertex_buffers[current_vertex_buffer].vao);
 		glBindBuffer(GL_ARRAY_BUFFER, vertex_buffers[current_vertex_buffer].vbo);
 		glDrawArrays(GL_TRIANGLES, start, count);
 	}
@@ -190,9 +217,9 @@ namespace hw4
 		if (!IsValid(current_vertex_buffer) || !IsValid(current_index_buffer))
 			return;
 
+		glBindVertexArray(vertex_buffers[current_vertex_buffer].vao);
 		glBindBuffer(GL_ARRAY_BUFFER, vertex_buffers[current_vertex_buffer].vbo);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffers[current_index_buffer].ibo);
-		glDrawArrays(GL_TRIANGLES, start, count);
 		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, reinterpret_cast<void*>(start));
 	}
 
