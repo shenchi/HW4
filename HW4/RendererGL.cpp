@@ -87,6 +87,9 @@ namespace hw4
 		glUniformMatrix4fv(mat_model_location, 1, GL_FALSE, reinterpret_cast<GLfloat*>(&identity));
 		glUniformMatrix4fv(mat_view_location, 1, GL_FALSE, reinterpret_cast<GLfloat*>(&identity));
 		glUniformMatrix4fv(mat_proj_location, 1, GL_FALSE, reinterpret_cast<GLfloat*>(&identity));
+
+		glGenVertexArrays(1, &vao);
+		glBindVertexArray(vao);
 	}
 
 	RendererGL::~RendererGL()
@@ -95,9 +98,7 @@ namespace hw4
 
 	VertexBufferHandle RendererGL::CreateVertexBuffer(size_t size, const void* data)
 	{
-		GLuint vao, vbo;
-		glGenVertexArrays(1, &vao);
-		glBindVertexArray(vao);
+		GLuint vbo;
 
 		glGenBuffers(1, &vbo);
 		glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -106,7 +107,7 @@ namespace hw4
 		glEnableVertexAttribArray(position_location);
 		glVertexAttribPointer(position_location, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
 
-		vertex_buffers.push_back(VertexBuffer{ true, vao, vbo });
+		vertex_buffers.push_back(VertexBuffer{ true, vbo });
 
 		return VertexBufferHandle{ static_cast<uint32>(vertex_buffers.size() - 1) };
 	}
@@ -116,7 +117,7 @@ namespace hw4
 		if (!IsValid(vertex_buffer))
 			return;
 
-		glBindVertexArray(vertex_buffers[vertex_buffer].vao);
+		glBindBuffer(GL_ARRAY_BUFFER, vertex_buffers[vertex_buffer].vbo);
 		glBufferData(GL_ARRAY_BUFFER, size, 0, GL_DYNAMIC_DRAW); // orphaning the buffer
 		glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
 	}
@@ -131,15 +132,33 @@ namespace hw4
 
 	IndexBufferHandle RendererGL::CreateIndexBuffer(size_t size, const uint32 * data)
 	{
-		return IndexBufferHandle();
+		GLuint ibo;
+
+		glGenBuffers(1, &ibo);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+
+		index_buffers.push_back(IndexBuffer{ true, ibo });
+
+		return IndexBufferHandle{ static_cast<uint32>(index_buffers.size() - 1) };
 	}
 
 	void RendererGL::UpdateIndexBuffer(IndexBufferHandle index_buffer, size_t size, const uint32 * data)
 	{
+		if (!IsValid(index_buffer))
+			return;
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffers[index_buffer].ibo);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, 0, GL_DYNAMIC_DRAW); // orphaning the buffer
+		glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, size, data);
 	}
 
 	void RendererGL::SetIndexBuffer(IndexBufferHandle index_buffer)
 	{
+		if (!IsValid(index_buffer))
+			return;
+
+		current_index_buffer = index_buffer;
 	}
 
 	void RendererGL::SetModelMatrix(const float* matrix)
@@ -162,12 +181,19 @@ namespace hw4
 		if (!IsValid(current_vertex_buffer))
 			return;
 
-		glBindVertexArray(vertex_buffers[current_vertex_buffer].vao);
+		glBindBuffer(GL_ARRAY_BUFFER, vertex_buffers[current_vertex_buffer].vbo);
 		glDrawArrays(GL_TRIANGLES, start, count);
 	}
 
 	void RendererGL::DrawIndexed(uint32 start, uint32 count)
 	{
+		if (!IsValid(current_vertex_buffer) || !IsValid(current_index_buffer))
+			return;
+
+		glBindBuffer(GL_ARRAY_BUFFER, vertex_buffers[current_vertex_buffer].vbo);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffers[current_index_buffer].ibo);
+		glDrawArrays(GL_TRIANGLES, start, count);
+		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, reinterpret_cast<void*>(start));
 	}
 
 	void RendererGL::ClearRenderTarget(float r, float g, float b, float a)
@@ -192,6 +218,11 @@ namespace hw4
 	bool RendererGL::IsValid(VertexBufferHandle handle)
 	{
 		return handle && handle.id < vertex_buffers.size() && vertex_buffers[handle.id].in_use;
+	}
+
+	bool RendererGL::IsValid(IndexBufferHandle handle)
+	{
+		return handle && handle.id < index_buffers.size() && index_buffers[handle.id].in_use;;
 	}
 
 }

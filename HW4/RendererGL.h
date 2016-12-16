@@ -43,6 +43,7 @@ namespace hw4
 
 	private:
 		bool IsValid(VertexBufferHandle handle);
+		bool IsValid(IndexBufferHandle handle);
 
 	private:
 
@@ -52,15 +53,27 @@ namespace hw4
 		uint32 mat_view_location;
 		uint32 mat_proj_location;
 
+		uint32 vao;
+
 		struct VertexBuffer
 		{
 			bool	in_use;
-			uint32	vao, vbo;
+			uint32	vbo;
 		};
 
 		std::vector<VertexBuffer> vertex_buffers;
 
 		VertexBufferHandle current_vertex_buffer;
+
+		struct IndexBuffer
+		{
+			bool	in_use;
+			uint32	ibo;
+		};
+
+		std::vector<IndexBuffer> index_buffers;
+
+		IndexBufferHandle current_index_buffer;
 	};
 
 }

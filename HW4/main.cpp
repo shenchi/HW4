@@ -28,15 +28,18 @@ namespace
 		-0.5f, 0.0f, 0.5f,
 		-0.5f, 0.0f, -0.5f,
 		0.5f, 0.0f, 0.5f,
-
-		0.5f, 0.0f, 0.5f,
-		-0.5f, 0.0f, -0.5f,
 		0.5f, 0.0f, -0.5f,
+	};
+
+	const unsigned int indices[] =
+	{
+		0, 1, 2, 2, 1, 3
 	};
 
 	float *dynamic_vertices = nullptr;
 
-	hw4::VertexBufferHandle buffer;
+	hw4::VertexBufferHandle vertex_buffer;
+	hw4::IndexBufferHandle index_buffer;
 	hw4::Camera camera;
 }
 
@@ -48,7 +51,9 @@ void Init()
 	for (int i = 0; i < float_count; i++)
 		dynamic_vertices[i] = vertices[i];
 
-	buffer = hw4::Renderer::instance()->CreateVertexBuffer(sizeof(vertices), reinterpret_cast<const void*>(dynamic_vertices));
+	vertex_buffer = hw4::Renderer::instance()->CreateVertexBuffer(sizeof(vertices), reinterpret_cast<const void*>(dynamic_vertices));
+
+	index_buffer = hw4::Renderer::instance()->CreateIndexBuffer(sizeof(indices), indices);
 
 	camera.SetPosition(glm::vec3(0.0f, 1.0f, 1.0f));
 
@@ -134,8 +139,10 @@ void Update(float delta_time)
 
 void Render()
 {
-	hw4::Renderer::instance()->SetVertexBuffer(buffer);
-	hw4::Renderer::instance()->Draw(0, 6);
+	hw4::Renderer::instance()->SetVertexBuffer(vertex_buffer);
+	hw4::Renderer::instance()->SetIndexBuffer(index_buffer);
+	//hw4::Renderer::instance()->Draw(0, 6);
+	hw4::Renderer::instance()->DrawIndexed(0, 6);
 }
 
 void Release()
