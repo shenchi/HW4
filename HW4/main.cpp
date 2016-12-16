@@ -159,7 +159,10 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	//auto terrain = std::make_shared<hw4::Terrain>(0.1f, 100);
 	auto terrain = std::make_shared<hw4::Terrain>(0.1f, 100);
 	pTerrain = terrain.get();
-	pTerrain->SetSamplingFunction([](float x, float y) { return glm::perlin(glm::vec2(x, y)) * 0.7f; });
+	pTerrain->SetSamplingFunction([](float x, float y) { 
+		glm::vec2 pos(x, y);
+		return glm::perlin(pos) * 0.7f + glm::perlin(pos * 10.0f) * 0.3f; 
+	});
 	pTerrain->SetPlayerPosition(0.0f, 1.0f, 0.0f);
 
 	ResetProjection(win->Width(), win->Height());
