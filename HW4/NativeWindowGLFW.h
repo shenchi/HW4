@@ -5,17 +5,18 @@ struct GLFWwindow;
 
 namespace hw4
 {
-	class NativeWindowGL : public NativeWindow
+	class NativeWindowGLFW : public NativeWindow
 	{
 	public:
-		NativeWindowGL(int width, int height, const char* title, bool fullscreen = false);
-		~NativeWindowGL();
+		NativeWindowGLFW(int width, int height, const char* title, bool fullscreen = false);
+		~NativeWindowGLFW();
 
 		virtual bool UpdateEvent();
 
 		virtual void Present();
 
 	private:
+		friend class InputGLFW;
 		GLFWwindow* window;
 	};
 }

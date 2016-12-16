@@ -1,36 +1,20 @@
 #include <Windows.h>
-#include <glad\glad.h>
-#include <GLFW\glfw3.h>
 #include <memory>
 #include <cassert>
+
+#include <chrono>
+
+#include <glm\glm.hpp>
+#include <glm\gtc\matrix_transform.hpp>
 
 #include "ModuleFactoryGL.h"
 #include "NativeWindow.h"
 #include "Renderer.h"
+#include "Input.h"
 
 namespace
 {
-#define STRINGIFY(x) #x
-
-	const char* vert_shader_source = STRINGIFY(
-
-	in vec3 position;
-	
-	void main()
-	{
-		gl_Position = vec4(position, 1.0);
-	}
-
-	);
-
-	const char* pixel_shader_source = STRINGIFY(
-
-	void main()
-	{
-		gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
-	}
-
-	);
+	typedef std::chrono::high_resolution_clock timer;
 
 	const float vertices[] = { 
 		0.0f, 0.5f, 0.0f,
@@ -38,67 +22,42 @@ namespace
 		-0.5f, -0.5f, 0.0f,
 	};
 
-	GLuint vertex_shader, fragment_shader, program, position;
+	float *dynamic_vertices = nullptr;
 
-	GLuint vao, vbo;
+	hw4::VertexBufferHandle buffer;
 }
 
-void ShowShaderLog(GLuint shader)
-{
-	GLint len = 0;
-	glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &len);
-	if (0 == len)
-		return;
-
-	GLchar* log = new GLchar[len];
-
-	glGetShaderInfoLog(shader, len, nullptr, log);
-
-	delete[] log;
-}
 
 void Init()
 {
-	vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertex_shader, 1, &vert_shader_source, nullptr);
-	glCompileShader(vertex_shader);
+	dynamic_vertices = new float[9];
+	for (int i = 0; i < 9; i++)
+		dynamic_vertices[i] = vertices[i];
 	
-	ShowShaderLog(vertex_shader);
+	buffer = hw4::Renderer::instance()->CreateVertexBuffer(sizeof(vertices), reinterpret_cast<const void*>(dynamic_vertices));
+}
 
-	fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragment_shader, 1, &pixel_shader_source, nullptr);
-	glCompileShader(fragment_shader);
+void Update(float delta_time)
+{
+	static float t = 0.0f;
+	t += delta_time;
+	dynamic_vertices[0] = sin(t) * 0.5f;
 
-	ShowShaderLog(fragment_shader);
+	hw4::Renderer::instance()->UpdateVertexBuffer(buffer, sizeof(vertices), reinterpret_cast<const void*>(dynamic_vertices));
 
-	program = glCreateProgram();
-	glAttachShader(program, vertex_shader);
-	glAttachShader(program, fragment_shader);
-	glLinkProgram(program);
-
-	glValidateProgram(program);
-	GLint status = GL_FALSE;
-	glGetProgramiv(program, GL_VALIDATE_STATUS, &status);
-	assert(status == GL_TRUE);
-
-	position = glGetAttribLocation(program, "position");
-
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
-
-	glGenBuffers(1, &vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), reinterpret_cast<const void*>(vertices), GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(position);
-	glVertexAttribPointer(position, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
+	//glm::mat4 model_mat = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 0.0f, 0.0f));
+	//hw4::Renderer::instance()->SetModelMatrix(reinterpret_cast<float*>(&model_mat));
 }
 
 void Render()
 {
-	glUseProgram(program);
-	glBindVertexArray(vao);
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	hw4::Renderer::instance()->SetVertexBuffer(buffer);
+	hw4::Renderer::instance()->Draw(0, 3);
+}
+
+void Release()
+{
+	delete[] dynamic_vertices;
 }
 
 int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
@@ -108,18 +67,42 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	auto win = factory->CreateNativeWindow(800, 600, "HW4");
 	//auto win = factory->CreateNativeWindow(1920, 1080, "HW4", true);
 	auto renderer = factory->CreateRenderer(win);
+	auto input = factory->CreateInput(win);
 
 	Init();
 
+	float interval = 0.016f;
+	float elapsed = 0.0f;
+	auto lastTime = timer::now();
+
 	while (win->UpdateEvent())
 	{
-		renderer->ClearRenderTarget(0.3f, 0.3f, 0.3f, 1.0f);
+		auto now = timer::now();
+		float deltaTime = std::chrono::duration<float>(now - lastTime).count();
+
+
+		if (elapsed + deltaTime < interval)
+		{
+			continue;
+		}
+
+		lastTime = now;
+		elapsed = deltaTime + elapsed - interval;
+
+		if (input->IsButtonPressed(hw4::KEY_ESCAPE))
+			break;
+
+		Update(deltaTime);
+
+		renderer->ClearRenderTarget(0.0f, 0.0f, 0.0f, 1.0f);
 		renderer->ClearDepthStencil(0.0f, 0);
 
 		Render();
 
 		win->Present();
 	}
+
+	Release();
 
 	return 0;
 }

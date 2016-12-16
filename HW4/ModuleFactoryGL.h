@@ -14,5 +14,7 @@ namespace hw4
 		virtual std::shared_ptr<NativeWindow> CreateNativeWindow(int width, int height, const char* title, bool fullscreen = false);
 
 		virtual std::shared_ptr<Renderer> CreateRenderer(std::weak_ptr<NativeWindow> window);
+
+		virtual std::shared_ptr<Input> CreateInput(std::weak_ptr<NativeWindow> window);
 	};
 }

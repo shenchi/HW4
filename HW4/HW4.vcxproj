@@ -155,18 +155,23 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\3rd_party\glad\src\glad.c" />
+    <ClCompile Include="Input.cpp" />
+    <ClCompile Include="InputGLFW.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ModuleFactoryGL.cpp" />
-    <ClCompile Include="NativeWindowGL.cpp" />
+    <ClCompile Include="NativeWindowGLFW.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="RendererGL.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CommonTypes.h" />
+    <ClInclude Include="Handle.h" />
+    <ClInclude Include="Input.h" />
+    <ClInclude Include="InputGLFW.h" />
     <ClInclude Include="ModuleFactory.h" />
     <ClInclude Include="ModuleFactoryGL.h" />
     <ClInclude Include="NativeWindow.h" />
-    <ClInclude Include="NativeWindowGL.h" />
+    <ClInclude Include="NativeWindowGLFW.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="RendererGL.h" />
   </ItemGroup>

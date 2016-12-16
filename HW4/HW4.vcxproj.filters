@@ -24,13 +24,19 @@
     <ClCompile Include="ModuleFactoryGL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="NativeWindowGL.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="RendererGL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\3rd_party\glad\src\glad.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NativeWindowGLFW.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Input.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="InputGLFW.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -44,9 +50,6 @@
     <ClInclude Include="NativeWindow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="NativeWindowGL.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ModuleFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -54,6 +57,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CommonTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Handle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Input.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NativeWindowGLFW.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="InputGLFW.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
