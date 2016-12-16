@@ -164,6 +164,7 @@
     <ClCompile Include="RendererGL.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="CommonTypes.h" />
     <ClInclude Include="Handle.h" />
     <ClInclude Include="Input.h" />

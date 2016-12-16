@@ -50,6 +50,15 @@ namespace hw4
 		KEY_X,
 		KEY_Y,
 		KEY_Z,
+
+		KEY_LEFT_SHIFT = 340,
+		KEY_LEFT_CTRL,
+		KEY_LEFT_ALT,
+		KEY_LEFT_WIN,
+		KEY_RIGHT_SHIFT,
+		KEY_RIGHT_CTRL,
+		KEY_RIGHT_ALT,
+		KEY_RIGHT_WIN
 	};
 
 	class Input

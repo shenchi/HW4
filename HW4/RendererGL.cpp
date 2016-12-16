@@ -129,6 +129,19 @@ namespace hw4
 		current_vertex_buffer = vertex_buffer;
 	}
 
+	IndexBufferHandle RendererGL::CreateIndexBuffer(size_t size, const uint32 * data)
+	{
+		return IndexBufferHandle();
+	}
+
+	void RendererGL::UpdateIndexBuffer(IndexBufferHandle index_buffer, size_t size, const uint32 * data)
+	{
+	}
+
+	void RendererGL::SetIndexBuffer(IndexBufferHandle index_buffer)
+	{
+	}
+
 	void RendererGL::SetModelMatrix(const float* matrix)
 	{
 		glUniformMatrix4fv(mat_model_location, 1, GL_FALSE, matrix);
@@ -151,6 +164,10 @@ namespace hw4
 
 		glBindVertexArray(vertex_buffers[current_vertex_buffer].vao);
 		glDrawArrays(GL_TRIANGLES, start, count);
+	}
+
+	void RendererGL::DrawIndexed(uint32 start, uint32 count)
+	{
 	}
 
 	void RendererGL::ClearRenderTarget(float r, float g, float b, float a)

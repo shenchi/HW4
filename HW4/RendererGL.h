@@ -19,6 +19,12 @@ namespace hw4
 
 		virtual void SetVertexBuffer(VertexBufferHandle vertex_buffer);
 
+		virtual IndexBufferHandle CreateIndexBuffer(size_t size = 0, const uint32* data = nullptr);
+
+		virtual void UpdateIndexBuffer(IndexBufferHandle index_buffer, size_t size, const uint32* data);
+
+		virtual void SetIndexBuffer(IndexBufferHandle index_buffer);
+
 		virtual void SetModelMatrix(const float* matrix);
 
 		virtual void SetViewMatrix(const float* matrix);
@@ -26,6 +32,8 @@ namespace hw4
 		virtual void SetProjectionMatrix(const float* matrix);
 
 		virtual void Draw(uint32 start, uint32 count);
+
+		virtual void DrawIndexed(uint32 start, uint32 count);
 
 		virtual void ClearRenderTarget(float r, float g, float b, float a);
 

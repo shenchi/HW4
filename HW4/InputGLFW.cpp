@@ -13,6 +13,8 @@ namespace hw4
 	{
 		glfwSetInputMode(this->window, GLFW_STICKY_KEYS, 1);
 		glfwSetInputMode(this->window, GLFW_STICKY_MOUSE_BUTTONS, 1);
+
+		glfwSetInputMode(this->window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	}
 
 	InputGLFW::~InputGLFW()
